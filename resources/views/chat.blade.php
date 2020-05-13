@@ -785,7 +785,6 @@ Website: http://emilcarlsson.se/
     var db = firebase.firestore();
 
     var usersref= db.collection("adminChat");
-    // code for unread message
     
     var arrUnreadMessage = [];
     var unreadmessage = 0;
@@ -796,75 +795,68 @@ Website: http://emilcarlsson.se/
    
     $(document).ready(function()
     {
-
-      // $("#screencontent").empty();
-
       var messagecount = [];
       var nonmessagecount = [];
-      console.log("{{url('/getUserDetails') }}");
       var lastmessage='';
       var unreadmessage = 0;
-      $.ajax(
-      {
-        type: 'GET',
-        url:"{{ url('/getUserDetails') }}/",
-        success:function(response)
-        {
-            data = JSON.parse(response);
-            data.forEach(function(element)
-            {
-                var firebaseId=element.firebaseId;
-                var name=element.name;
-                var userId=element.id;
-                if(firebaseId!=null)
-                {
-                  console.log(firebaseId);
-                  usersref.doc(firebaseId).collection("message").orderBy("timestamp",'desc').limit(1).get().then((querySnapshot2) => 
-                  {
-                      if(querySnapshot2.docs.length!=0)
-                      {
-                        lastmessage=querySnapshot2.docs[0].data().Content;
-                        var seenBy=querySnapshot2.docs[0].data().seenBy;
-                        if(seenBy.includes("Admin") || seenBy.includes("admin"))
-                        {
-                            unreadmessage=0;
-                        }
-                        else
-                        {
-                            unreadmessage++;
-                        
-                        }
-                        if(unreadmessage>0)
-                        {
-                            var message =  '<input type="hidden" value="'+firebaseId+'" name="fireId'+element.id+'" id="fireId'+element.id+'"><li id="listLi" class="contact"><span onclick="clickUser('+element.id+')" id="'+element.id+'" value='+firebaseId+'><div class="wrap"><img src="http://emilcarlsson.se/assets/jonathansidwell.png" alt="" /><div class="meta"><p id="username" class="name">'+name+'</p><p class="preview">' +lastmessage+ '</p></div></div></span></li>';
-                            $('#chatid').prepend(message);
-                        }
-                        else
-                        {
-                            $('#chatid').append('<input type="hidden" value="'+firebaseId+'" name="fireId'+element.id+'" id="fireId'+element.id+'"><li id="listLi" class="contact"><span onclick="clickUser('+element.id+')" id="'+element.id+'" value='+firebaseId+'><div class="wrap"><img src="http://emilcarlsson.se/assets/jonathansidwell.png" alt="" /><div class="meta"><p id="username" class="name">'+name+'</p><p class="preview">' +lastmessage+ '</p></div></div></span></li>');
-                        }
-                      }
-                  });
-                }
-            });
 
-            messagecount.forEach(function(item)
-            {
-              // console.log (item);
-              $('#chatid').append(item);
-            });
-        }
+      var usersList = db.collection("users").get().then(function(querySnapshot) 
+      {
+        querySnapshot.forEach(function(doc) 
+        {
+          console.log(doc.id, " => ", doc.data().name);
+          var firebaseId = doc.id;
+          var name = doc.data().name;
+          usersref.doc(firebaseId).collection("message").orderBy("timestamp",'desc').limit(1).get().then((querySnapshot2) => 
+          {
+              if(querySnapshot2.docs.length!=0)
+              {
+                lastmessage=querySnapshot2.docs[0].data().Content;
+                var seenBy=querySnapshot2.docs[0].data().seenBy;
+                if(seenBy.includes("Admin") || seenBy.includes("admin"))
+                {
+                    unreadmessage=0;
+                }
+                else
+                {
+                    unreadmessage++;
+                
+                }
+                if(unreadmessage>0)
+                {
+                    var message =  '<input type="hidden" value="'+firebaseId+'" name="fireId'+firebaseId+'" id="fireId'+firebaseId+'"><li id="listLi" class="class'+firebaseId+' contact"><span onclick=clickUser(\'' + doc.id + '\')" id="'+firebaseId+'" value='+firebaseId+'><div class="wrap"><img src="http://emilcarlsson.se/assets/jonathansidwell.png" alt="" /><div class="meta"><p id="username" class="name">'+name+'</p><p class="preview">' +lastmessage+ '</p></div></div></span></li>';
+                    $('#chatid').prepend(message);
+                }
+                else
+                {
+                    $('#chatid').append('<input type="hidden" value="'+firebaseId+'" name="fireId'+firebaseId+'" id="fireId'+firebaseId+'"><li id="listLi" class=" class'+firebaseId+' contact"><span onclick="clickUser(\'' + doc.id + '\')" id="'+firebaseId+'" value='+firebaseId+'><div class="wrap"><img src="http://emilcarlsson.se/assets/jonathansidwell.png" alt="" /><div class="meta"><p id="username" class="name">'+name+'</p><p class="preview">' +lastmessage+ '</p></div></div></span></li>');
+                }
+              }
+          });
+
+          messagecount.forEach(function(item)
+          {
+            // console.log (item);
+            $('#chatid').append(item);
+          });
+        });
+      })
+      .catch(function(error) 
+      {
+          console.log("Error getting documents: ", error);
       });
     });
     
-    function clickUser(userid)
+    function clickUser(firebaseId)
     {
+        $(".contact").removeClass("activeUser");
+        $(".class"+firebaseId+"").addClass("activeUser");
+        $(".class"+firebaseId+"").show();
         var idFromAdmin = [];
         var idFromUser = [];
-        var firebaseId=document.getElementById('fireId'+userid+'').value;
         var datetime = d.getTime();
         var usersref= db.collection("adminChat").doc(firebaseId).collection("message");
-        if(userid)
+        if(firebaseId)
         {
             var userMessageCollection=usersref;
             userMessageCollection.orderBy("timestamp",'desc').get().then((querySnapshot1) => 
@@ -909,19 +901,23 @@ Website: http://emilcarlsson.se/
 
               });
             });
-            console.log("{{ url('/userDetails') }}/"+userid);
-            $.ajax(
-            {    //create an ajax request to display.php
-                type: "GET",
-                url: "{{ url('/userDetails') }}/"+userid,             
-                dataType: "html",   //expect html to be returned                
-                success: function(response)
-                {   
-                    var response = response;
-                    
-                    var headMsg = '<img src="http://emilcarlsson.se/assets/harveyspecter.png" alt="" /><p>'+response+'</p><div class="message-input"><div class="wrap"><input id="inputText" type="text" placeholder="Write your message..." /><button id="msgSent" onclick="msgSent('+userid+')" class="submit"><i class="fa fa-paper-plane" aria-hidden="true"></i></button></div></div>';
-                    $('.contact-profile').prepend(headMsg);
+            
+            var docRef = db.collection("users").doc(firebaseId);
+            docRef.get().then(function(doc) 
+            {
+                if (doc.exists) 
+                {
+                  var userName = doc.data().name;
+                  var headMsg = '<img src="http://emilcarlsson.se/assets/harveyspecter.png" alt="" /><p>'+userName+'</p><div class="message-input"><div class="wrap"><input id="inputText" type="text" placeholder="Write your message..." /><button id="msgSent" onclick="msgSent(\'' + firebaseId + '\')" class="submit"><i class="fa fa-paper-plane" aria-hidden="true"></i></button></div></div>';
+                  $('.contact-profile').prepend(headMsg);
+                } 
+                else 
+                {
+                    // doc.data() will be undefined in this case
+                    console.log("No such document!");
                 }
+            }).catch(function(error) {
+                console.log("Error getting document:", error);
             });
             
         }
@@ -932,20 +928,19 @@ Website: http://emilcarlsson.se/
               
     }
 
-    function msgSent(userid)
+    function msgSent(firebaseId)
     {
-        var firebaseUserId=document.getElementById('fireId'+userid+'').value;
 
         var db = firebase.firestore();
         var currentdate = new Date(); 
         var datetime = currentdate.getTime();
         var chatData=$('#inputText').val();
         var usersref= db.collection("adminChat");
-        var userMessageCollection= usersref.doc(firebaseUserId).collection("message");
+        var userMessageCollection= usersref.doc(firebaseId).collection("message");
         
         var docData = {
             idFrom: 'Admin',
-            idTo: firebaseUserId,
+            idTo: firebaseId,
             timestamp:datetime.toString(),
             Content: chatData,
             type: 0,
@@ -961,6 +956,9 @@ Website: http://emilcarlsson.se/
               var ctime = docData.timestamp;
               var displaytime = new Date();
             }
+        }).catch(function(error) 
+        {
+            console.log("Error getting document:", error);
         });
 
         var adminFireMsg = '<ul><li class="replies"> <p>'+chatData+'</p></li></ul>';
