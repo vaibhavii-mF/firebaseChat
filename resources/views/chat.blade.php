@@ -849,9 +849,9 @@ Website: http://emilcarlsson.se/
     
     function clickUser(firebaseId)
     {
-        $(".contact").removeClass("activeUser");
-        $(".class"+firebaseId+"").addClass("activeUser");
-        $(".class"+firebaseId+"").show();
+
+        $('#screencontent').load(location.href + " #activeClass");
+
         var idFromAdmin = [];
         var idFromUser = [];
         var datetime = d.getTime();
