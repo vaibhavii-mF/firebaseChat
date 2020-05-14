@@ -1,7 +1,7 @@
 <html>
   <body>
     <input type="text" name="inputText" id="inputText">
-    <button id="msgsent" name="msgSent" onclick="msgSent('7Ep0SmkzYEZS7kIVBjPt')">Send</button>
+    <button id="msgsent" name="msgSent" onclick="msgSent('WpMoJ6SGb91P65renEAH')">Send</button>
 
 
     <script type="text/javascript" src="https://cdn.jsdelivr.net/momentjs/latest/moment.min.js"></script>
@@ -44,7 +44,7 @@
     var datetime=d.getTime();
     
    
-    var firebase = '7Ep0SmkzYEZS7kIVBjPt';
+    var firebase = 'WpMoJ6SGb91P65renEAH';
     function msgSent(firebaseId)
     {
         var currentdate = new Date(); 

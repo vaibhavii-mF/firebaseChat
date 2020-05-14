@@ -669,11 +669,16 @@ body {
 #frame .content .message-input .wrap button {
   float: right;
   border: none;
-  width: 50px;
+  width: 75px;
+  height: 62px;
   padding: 12px 0;
   cursor: pointer;
   background: #32465a;
   color: #f5f5f5;
+}
+::placeholder 
+{
+  padding-left: 7px;
 }
 @media screen and (max-width: 735px) {
   #frame .content .message-input .wrap button {
@@ -686,33 +691,22 @@ body {
 #frame .content .message-input .wrap button:focus {
   outline: none;
 }
+
+
 </style></head><body>
-<!-- 
-
-A concept for a chat interface. 
-
-Try writing a new message! :)
-
-
-Follow me here:
-Twitter: https://twitter.com/thatguyemil
-Codepen: https://codepen.io/emilcarlsson/
-Website: http://emilcarlsson.se/
-
--->
-
-<?php
-  $session = session()->get('email');
-  $name = DB::table('users')->where('email',$session)->pluck('name');
-  // echo $name[0]; 
-?>
 
 <div id="frame">
 	<div id="sidepanel">
 		<div id="profile">
 			<div class="wrap">
 				<img id="profile-img" src="http://emilcarlsson.se/assets/mikeross.png" class="online" alt="" />
-				<p>{{$name[0]}}</p>
+        <p id="admin"> 
+          Admin
+          <a id="logout">
+             <i class="fa fa-sign-out" style="color:white" aria-hidden="true"></i> 
+          </a>
+        </p>
+        
 				<!-- <i class="fa fa-chevron-down expand-button" aria-hidden="true"></i> -->
 				
 			</div>
@@ -747,15 +741,15 @@ Website: http://emilcarlsson.se/
 
 
 <script type="text/javascript" src="https://cdn.jsdelivr.net/momentjs/latest/moment.min.js"></script>
-    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.min.js"></script>
-    <script src="https://ajax.aspnetcdn.com/ajax/jQuery/jquery-3.4.0.min.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/6.0.2/firebase.js"></script>
+<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.min.js"></script>
+<script src="https://ajax.aspnetcdn.com/ajax/jQuery/jquery-3.4.0.min.js"></script>
 
-    <script type="text/javascript" src="https://cdn.jsdelivr.net/momentjs/latest/moment.min.js"></script>
-    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.min.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/7.6.1/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/7.6.1/firebase-firestore.js"></script>
-    <script src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.10.3/jquery-ui.min.js"></script>
+<script type="text/javascript" src="https://cdn.jsdelivr.net/momentjs/latest/moment.min.js"></script>
+<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.min.js"></script>
+<script src="https://www.gstatic.com/firebasejs/7.6.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/7.6.1/firebase-firestore.js"></script>
+<script src="https://www.gstatic.com/firebasejs/6.0.2/firebase.js"></script>
+<script src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.10.3/jquery-ui.min.js"></script>
 
 </body>
 
@@ -824,12 +818,18 @@ Website: http://emilcarlsson.se/
                 }
                 if(unreadmessage>0)
                 {
-                    var message =  '<input type="hidden" value="'+firebaseId+'" name="fireId'+firebaseId+'" id="fireId'+firebaseId+'"><li id="listLi" class="class'+firebaseId+' contact"><span onclick=clickUser(\'' + doc.id + '\')" id="'+firebaseId+'" value='+firebaseId+'><div class="wrap"><img src="http://emilcarlsson.se/assets/jonathansidwell.png" alt="" /><div class="meta"><p id="username" class="name">'+name+'</p><p class="preview">' +lastmessage+ '</p></div></div></span></li>';
-                    $('#chatid').prepend(message);
+                    var message =  '<input type="hidden" value="'+firebaseId+'" name="fireId'+firebaseId+'" id="fireId'+firebaseId+'"><li id="listLi" class="class'+firebaseId+' contact"><span onclick="clickUser(\'' + firebaseId + '\')" id="'+firebaseId+'" value='+firebaseId+'><div class="wrap"><img src="http://emilcarlsson.se/assets/jonathansidwell.png" alt="" /><div class="meta"><p id="username" class="name">'+name+'</p><p id="unreadmsg" align="center" style="background-color:white;color:black;border-top-left-radius: 50%;border-top-right-radius: 50%;border-bottom-left-radius: 50%;border-bottom-right-radius: 50%;width: 6%;margin-top:-4%;margin-left: 90%;height: 4%;padding-top: 1%;">'+unreadmessage+'</p><p class="preview">' +lastmessage+ '</p></div></div></span></li>';
+                    
+                    var search =message.includes('""');
+                    if(search == true)
+                    {
+                      message.replace('""', '"');
+                      $('#chatid').prepend(message);
+                    }
                 }
                 else
                 {
-                    $('#chatid').append('<input type="hidden" value="'+firebaseId+'" name="fireId'+firebaseId+'" id="fireId'+firebaseId+'"><li id="listLi" class=" class'+firebaseId+' contact"><span onclick="clickUser(\'' + doc.id + '\')" id="'+firebaseId+'" value='+firebaseId+'><div class="wrap"><img src="http://emilcarlsson.se/assets/jonathansidwell.png" alt="" /><div class="meta"><p id="username" class="name">'+name+'</p><p class="preview">' +lastmessage+ '</p></div></div></span></li>');
+                    $('#chatid').append('<input type="hidden" value="'+firebaseId+'" name="fireId'+firebaseId+'" id="fireId'+firebaseId+'"><li id="listLi" class=" class'+firebaseId+' contact"><span onclick="clickUser(\'' + firebaseId + '\')" id="'+firebaseId+'" value='+firebaseId+'><div class="wrap"><img src="http://emilcarlsson.se/assets/jonathansidwell.png" alt="" /><div class="meta"><p id="username" class="name">'+name+'</p><p class="preview">' +lastmessage+ '</p></div></div></span></li>');
                 }
               }
           });
@@ -849,7 +849,6 @@ Website: http://emilcarlsson.se/
     
     function clickUser(firebaseId)
     {
-
         $('#screencontent').load(location.href + " #activeClass");
 
         var idFromAdmin = [];
@@ -874,6 +873,7 @@ Website: http://emilcarlsson.se/
                       else
                       {
                           // console.log(seenBy);
+                          var adminArr = ["Admin"];
                           var printMy = messages.data().seenBy;
                           var newArr = adminArr.concat(printMy);
                           userMessageCollection.doc(timestamp).update({seenBy : newArr})
@@ -928,9 +928,24 @@ Website: http://emilcarlsson.se/
               
     }
 
+    let logout=document.getElementById('logout');
+
+    logout.addEventListener('click',e=>
+    {
+      firebase.auth().signOut().then(function() 
+      {
+        console.log("Logged out");
+        window.location.replace("/");
+      }, function(error) 
+      {
+        var errorCode = error.code;
+        var errorMessage = error.message;
+        console.log(errorCode);
+        console.log(errorMessage);
+      });
+    });
     function msgSent(firebaseId)
     {
-
         var db = firebase.firestore();
         var currentdate = new Date(); 
         var datetime = currentdate.getTime();

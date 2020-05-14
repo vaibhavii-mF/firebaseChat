@@ -17,11 +17,6 @@ Route::get('/', function () {
     return view('auth/login');
 });
 
-Route::get('/header',function()
-{
-    return view('header');
-});
-
 Route::get('/chat',function()
 {
     return view('chat');
@@ -32,16 +27,15 @@ Route::get('/chatWithAdmin',function()
     return view('chatUsers');
 });
 
+Route::get('/chatWithTithi',function()
+{
+    return view('chatWithTithi');
+});
+
 Route::get('/login',function()
 {
     return view('auth/login');
 });
 
-// Route::post('/submitFaculty','Admin\facultyManager@submitFaculty');
-Route::get('getUserDetails', 'laravelChat@getUserDetails');
-Route::get('getAdminDetails', 'laravelChat@getAdminDetails');
-Route::get('userDetails/{id}', 'laravelChat@userDetails');
-Route::post('saveUser', 'laravelChat@saveUser');
 Auth::routes();
 
-Route::get('/home', 'HomeController@index')->name('home');
