@@ -109,19 +109,14 @@ span.psw {
   firebase.initializeApp(firebaseConfig);
 
   let loginbtn=document.getElementById('loginbtn');
-
   loginbtn.addEventListener('click',e=>
   {
-
     e.preventDefault();
     const email=$("#email").val().toString();
     const password = $("#password").val().toString();
-    console.log(email);
-    console.log(password);
     
     firebase.auth().signInWithEmailAndPassword(email, password).then(function() 
     {
-      console.log("success");
       window.location.replace("/chat");
     }, function(error) 
     {

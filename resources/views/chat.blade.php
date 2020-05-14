@@ -774,236 +774,224 @@ body {
   };
   // Initialize Firebase
   firebase.initializeApp(firebaseConfig);
+  var db = firebase.firestore();
 
-
-    var db = firebase.firestore();
-
-    var usersref= db.collection("adminChat");
-    
-    var arrUnreadMessage = [];
-    var unreadmessage = 0;
-    var lastmessage='';
-    var d=new Date();
-    var datetime=d.getTime();
-    
+  var usersref= db.collection("adminChat");
+  
+  var arrUnreadMessage = [];
+  var unreadmessage = 0;
+  var lastmessage='';
+  var d=new Date();
+  var datetime=d.getTime();
    
-    $(document).ready(function()
-    {
-      var messagecount = [];
-      var nonmessagecount = [];
-      var lastmessage='';
-      var unreadmessage = 0;
+  $(document).ready(function()
+  {
+    var messagecount = [];
+    var nonmessagecount = [];
+    var lastmessage='';
+    var unreadmessage = 0;
 
-      var usersList = db.collection("users").get().then(function(querySnapshot) 
+    var usersList = db.collection("users").get().then(function(querySnapshot) 
+    {
+      querySnapshot.forEach(function(doc) 
       {
-        querySnapshot.forEach(function(doc) 
+        var firebaseId = doc.id;
+        var name = doc.data().name;
+        usersref.doc(firebaseId).collection("message").orderBy("timestamp",'desc').limit(1).get().then((querySnapshot2) => 
         {
-          console.log(doc.id, " => ", doc.data().name);
-          var firebaseId = doc.id;
-          var name = doc.data().name;
-          usersref.doc(firebaseId).collection("message").orderBy("timestamp",'desc').limit(1).get().then((querySnapshot2) => 
-          {
-              if(querySnapshot2.docs.length!=0)
+            if(querySnapshot2.docs.length!=0)
+            {
+              lastmessage=querySnapshot2.docs[0].data().Content;
+              var seenBy=querySnapshot2.docs[0].data().seenBy;
+              if(seenBy.includes("Admin") || seenBy.includes("admin"))
               {
-                lastmessage=querySnapshot2.docs[0].data().Content;
-                var seenBy=querySnapshot2.docs[0].data().seenBy;
-                if(seenBy.includes("Admin") || seenBy.includes("admin"))
+                  unreadmessage=0;
+              }
+              else
+              {
+                  unreadmessage++;
+              
+              }
+              if(unreadmessage>0)
+              {
+                  var message =  '<input type="hidden" value="'+firebaseId+'" name="fireId'+firebaseId+'" id="fireId'+firebaseId+'"><li id="listLi" class="class'+firebaseId+' contact"><span onclick="clickUser(\'' + firebaseId + '\')" id="'+firebaseId+'" value='+firebaseId+'><div class="wrap"><img src="http://emilcarlsson.se/assets/jonathansidwell.png" alt="" /><div class="meta"><p id="username" class="name">'+name+'</p><p id="unreadmsg" align="center" style="background-color:white;color:black;border-top-left-radius: 50%;border-top-right-radius: 50%;border-bottom-left-radius: 50%;border-bottom-right-radius: 50%;width: 6%;margin-top:-4%;margin-left: 90%;height: 4%;padding-top: 1%;">'+unreadmessage+'</p><p class="preview">' +lastmessage+ '</p></div></div></span></li>';
+                  
+                  var search =message.includes('""');
+                  if(search == true)
+                  {
+                    message.replace('""', '"');
+                    $('#chatid').prepend(message);
+                  }
+              }
+              else
+              {
+                  $('#chatid').append('<input type="hidden" value="'+firebaseId+'" name="fireId'+firebaseId+'" id="fireId'+firebaseId+'"><li id="listLi" class=" class'+firebaseId+' contact"><span onclick="clickUser(\'' + firebaseId + '\')" id="'+firebaseId+'" value='+firebaseId+'><div class="wrap"><img src="http://emilcarlsson.se/assets/jonathansidwell.png" alt="" /><div class="meta"><p id="username" class="name">'+name+'</p><p class="preview">' +lastmessage+ '</p></div></div></span></li>');
+              }
+            }
+        });
+
+        messagecount.forEach(function(item)
+        {
+          $('#chatid').append(item);
+        });
+      });
+    })
+    .catch(function(error) 
+    {
+        console.log("Error getting documents: ", error);
+    });
+  });
+  
+  function clickUser(firebaseId)
+  {
+      $('#screencontent').load(location.href + " #activeClass");
+
+      var idFromAdmin = [];
+      var idFromUser = [];
+      var datetime = d.getTime();
+      var usersref= db.collection("adminChat").doc(firebaseId).collection("message");
+      if(firebaseId)
+      {
+          var userMessageCollection=usersref;
+          userMessageCollection.orderBy("timestamp",'desc').get().then((querySnapshot1) => 
+          {
+            querySnapshot1.forEach((messages)=>
+            {
+                if(messages.data().seenBy!='Admin' || messages.data().seenBy!='admin')
                 {
-                    unreadmessage=0;
-                }
-                else
-                {
-                    unreadmessage++;
-                
-                }
-                if(unreadmessage>0)
-                {
-                    var message =  '<input type="hidden" value="'+firebaseId+'" name="fireId'+firebaseId+'" id="fireId'+firebaseId+'"><li id="listLi" class="class'+firebaseId+' contact"><span onclick="clickUser(\'' + firebaseId + '\')" id="'+firebaseId+'" value='+firebaseId+'><div class="wrap"><img src="http://emilcarlsson.se/assets/jonathansidwell.png" alt="" /><div class="meta"><p id="username" class="name">'+name+'</p><p id="unreadmsg" align="center" style="background-color:white;color:black;border-top-left-radius: 50%;border-top-right-radius: 50%;border-bottom-left-radius: 50%;border-bottom-right-radius: 50%;width: 6%;margin-top:-4%;margin-left: 90%;height: 4%;padding-top: 1%;">'+unreadmessage+'</p><p class="preview">' +lastmessage+ '</p></div></div></span></li>';
-                    
-                    var search =message.includes('""');
-                    if(search == true)
+                    var timestamp=messages.data().timestamp;
+                    var seenBy=messages.data().seenBy;
+                    if(seenBy.includes("Admin") || seenBy.includes("admin"))
                     {
-                      message.replace('""', '"');
-                      $('#chatid').prepend(message);
+                        
+                    }
+                    else
+                    {
+                        var adminArr = ["Admin"];
+                        var printMy = messages.data().seenBy;
+                        var newArr = adminArr.concat(printMy);
+                        userMessageCollection.doc(timestamp).update({seenBy : newArr})
+                        .then((function()
+                        {
+                        }));
+                        var x=document.getElementById("unreadmsg");
+                        x.style.display = "none";
+                        unreadmessage=0;
                     }
                 }
+
+                var adminMsg = messages.data().idFrom == "Admin" || messages.data().idFrom == "admin";
+                if(adminMsg)
+                {
+
+                  var adminFireMsg = '<ul><li class="replies"> <p>'+messages.data().Content+'</p></li></ul>';
+                  $('.messages').prepend(adminFireMsg);
+                }
                 else
                 {
-                    $('#chatid').append('<input type="hidden" value="'+firebaseId+'" name="fireId'+firebaseId+'" id="fireId'+firebaseId+'"><li id="listLi" class=" class'+firebaseId+' contact"><span onclick="clickUser(\'' + firebaseId + '\')" id="'+firebaseId+'" value='+firebaseId+'><div class="wrap"><img src="http://emilcarlsson.se/assets/jonathansidwell.png" alt="" /><div class="meta"><p id="username" class="name">'+name+'</p><p class="preview">' +lastmessage+ '</p></div></div></span></li>');
+                  var UserFireMsg = '<ul><li class="sent"> <p>'+messages.data().Content+'</p></li></ul>';
+                  $('.messages').prepend(UserFireMsg);
                 }
-              }
-          });
 
-          messagecount.forEach(function(item)
+            });
+          });
+          
+          var docRef = db.collection("users").doc(firebaseId);
+          docRef.get().then(function(doc) 
           {
-            // console.log (item);
-            $('#chatid').append(item);
-          });
-        });
-      })
-      .catch(function(error) 
-      {
-          console.log("Error getting documents: ", error);
-      });
-    });
-    
-    function clickUser(firebaseId)
-    {
-        $('#screencontent').load(location.href + " #activeClass");
-
-        var idFromAdmin = [];
-        var idFromUser = [];
-        var datetime = d.getTime();
-        var usersref= db.collection("adminChat").doc(firebaseId).collection("message");
-        if(firebaseId)
-        {
-            var userMessageCollection=usersref;
-            userMessageCollection.orderBy("timestamp",'desc').get().then((querySnapshot1) => 
-            {
-              querySnapshot1.forEach((messages)=>
+              if (doc.exists) 
               {
-                  if(messages.data().seenBy!='Admin' || messages.data().seenBy!='admin')
-                  {
-                      var timestamp=messages.data().timestamp;
-                      var seenBy=messages.data().seenBy;
-                      if(seenBy.includes("Admin") || seenBy.includes("admin"))
-                      {
-                          
-                      }
-                      else
-                      {
-                          // console.log(seenBy);
-                          var adminArr = ["Admin"];
-                          var printMy = messages.data().seenBy;
-                          var newArr = adminArr.concat(printMy);
-                          userMessageCollection.doc(timestamp).update({seenBy : newArr})
-                          .then((function(){
-                          console.log("update data");
-                          }));
-                          var x=document.getElementById("unreadmsg");
-                          x.style.display = "none";
-                          unreadmessage=0;
-                      }
-                  }
-
-                  var adminMsg = messages.data().idFrom == "Admin" || messages.data().idFrom == "admin";
-                  if(adminMsg)
-                  {
-
-                    var adminFireMsg = '<ul><li class="replies"> <p>'+messages.data().Content+'</p></li></ul>';
-                    $('.messages').prepend(adminFireMsg);
-                  }
-                  else
-                  {
-                    var UserFireMsg = '<ul><li class="sent"> <p>'+messages.data().Content+'</p></li></ul>';
-                    $('.messages').prepend(UserFireMsg);
-                  }
-
-              });
-            });
-            
-            var docRef = db.collection("users").doc(firebaseId);
-            docRef.get().then(function(doc) 
-            {
-                if (doc.exists) 
-                {
-                  var userName = doc.data().name;
-                  var headMsg = '<img src="http://emilcarlsson.se/assets/harveyspecter.png" alt="" /><p>'+userName+'</p><div class="message-input"><div class="wrap"><input id="inputText" type="text" placeholder="Write your message..." /><button id="msgSent" onclick="msgSent(\'' + firebaseId + '\')" class="submit"><i class="fa fa-paper-plane" aria-hidden="true"></i></button></div></div>';
-                  $('.contact-profile').prepend(headMsg);
-                } 
-                else 
-                {
-                    // doc.data() will be undefined in this case
-                    console.log("No such document!");
-                }
-            }).catch(function(error) {
-                console.log("Error getting document:", error);
-            });
-            
-        }
-        else
-        {
-            // console.log("No data");
-        }  
-              
-    }
-
-    let logout=document.getElementById('logout');
-
-    logout.addEventListener('click',e=>
-    {
-      firebase.auth().signOut().then(function() 
-      {
-        console.log("Logged out");
-        window.location.replace("/");
-      }, function(error) 
-      {
-        var errorCode = error.code;
-        var errorMessage = error.message;
-        console.log(errorCode);
-        console.log(errorMessage);
-      });
-    });
-    function msgSent(firebaseId)
-    {
-        var db = firebase.firestore();
-        var currentdate = new Date(); 
-        var datetime = currentdate.getTime();
-        var chatData=$('#inputText').val();
-        var usersref= db.collection("adminChat");
-        var userMessageCollection= usersref.doc(firebaseId).collection("message");
-        
-        var docData = {
-            idFrom: 'Admin',
-            idTo: firebaseId,
-            timestamp:datetime.toString(),
-            Content: chatData,
-            type: 0,
-            seenBy: ['Admin'],
-           
-        };
-
-        userMessageCollection.doc((datetime).toString()).set(docData).then(function() 
-        {
-            console.log("Document written!");
-            if(docData.seenby == 'Admin')
-            {
-              var ctime = docData.timestamp;
-              var displaytime = new Date();
-            }
-        }).catch(function(error) 
-        {
-            console.log("Error getting document:", error);
-        });
-
-        var adminFireMsg = '<ul><li class="replies"> <p>'+chatData+'</p></li></ul>';
-        $('.messages').append(adminFireMsg);
-
-        $('#inputText').val('');
-    }
-
-    $("#searchid").on("keyup", function() 
-    {
-      var userName=$(this).val();
-      
-      var input, filter, ul, li, a, i, txtValue;
-      input = document.getElementById("searchid");
-      filter = input.value.toUpperCase();
-      ul = document.getElementById("chatid");
-      li = ul.getElementsByTagName("li");
-      for (i = 0; i < li.length; i++) 
-      {
-          a = li[i].getElementsByTagName("p")[0];
-          txtValue = a.textContent || a.innerText;
-          if (txtValue.toUpperCase().indexOf(filter) > -1) 
-          {
-              li[i].style.display = "";
-          } else 
-          {
-              li[i].style.display = "none";
-          }
+                var userName = doc.data().name;
+                var headMsg = '<img src="http://emilcarlsson.se/assets/harveyspecter.png" alt="" /><p>'+userName+'</p><div class="message-input"><div class="wrap"><input id="inputText" type="text" placeholder="Write your message..." /><button id="msgSent" onclick="msgSent(\'' + firebaseId + '\')" class="submit"><i class="fa fa-paper-plane" aria-hidden="true"></i></button></div></div>';
+                $('.contact-profile').prepend(headMsg);
+              } 
+              else 
+              {
+              }
+          }).catch(function(error) {
+              console.log("Error getting document:", error);
+          });
+          
       }
+      else
+      {
+      }  
+            
+  }
 
+  let logout=document.getElementById('logout');
+  logout.addEventListener('click',e=>
+  {
+    firebase.auth().signOut().then(function() 
+    {
+      window.location.replace("/");
+    }, function(error) 
+    {
+      var errorCode = error.code;
+      var errorMessage = error.message;
+      console.log(errorCode);
+      console.log(errorMessage);
     });
+  });
+  function msgSent(firebaseId)
+  {
+      var db = firebase.firestore();
+      var currentdate = new Date(); 
+      var datetime = currentdate.getTime();
+      var chatData=$('#inputText').val();
+      var usersref= db.collection("adminChat");
+      var userMessageCollection= usersref.doc(firebaseId).collection("message");
+      
+      var docData = {
+          idFrom: 'Admin',
+          idTo: firebaseId,
+          timestamp:datetime.toString(),
+          Content: chatData,
+          type: 0,
+          seenBy: ['Admin'],
+          
+      };
+
+      userMessageCollection.doc((datetime).toString()).set(docData).then(function() 
+      {
+          if(docData.seenby == 'Admin')
+          {
+            var ctime = docData.timestamp;
+            var displaytime = new Date();
+          }
+      }).catch(function(error) 
+      {
+          console.log("Error getting document:", error);
+      });
+
+      var adminFireMsg = '<ul><li class="replies"> <p>'+chatData+'</p></li></ul>';
+      $('.messages').append(adminFireMsg);
+
+      $('#inputText').val('');
+  }
+
+  $("#searchid").on("keyup", function() 
+  {
+    var userName=$(this).val();
+    
+    var input, filter, ul, li, a, i, txtValue;
+    input = document.getElementById("searchid");
+    filter = input.value.toUpperCase();
+    ul = document.getElementById("chatid");
+    li = ul.getElementsByTagName("li");
+    for (i = 0; i < li.length; i++) 
+    {
+        a = li[i].getElementsByTagName("p")[0];
+        txtValue = a.textContent || a.innerText;
+        if (txtValue.toUpperCase().indexOf(filter) > -1) 
+        {
+            li[i].style.display = "";
+        } else 
+        {
+            li[i].style.display = "none";
+        }
+    }
+
+  });
   </script>
 </html>
