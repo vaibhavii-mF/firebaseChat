@@ -716,10 +716,10 @@ body {
 			<input type="text" id="searchid" placeholder="Search contacts..." />
 		</div>
 		<div id="contacts">
-            
-			<ul id="chatid">
+      
+        <ul id="chatid">
 
-			</ul>
+        </ul> 
 		</div>
 	</div>
 	<div class="content" id="screencontent">
@@ -802,6 +802,24 @@ body {
             if(querySnapshot2.docs.length!=0)
             {
               lastmessage=querySnapshot2.docs[0].data().Content;
+
+              var len = querySnapshot2.docs[0].data().timestamp;
+              var datas = db.collection("adminChat").doc(firebaseId).collection("message").orderBy("timestamp",'desc').limit(1).onSnapshot(function(snapshot)
+              {
+                snapshot.docChanges().forEach(function(change)
+                {
+                  if (change.type === "added") 
+                  {
+                    // console.log("Data: ", change.doc.data().timestamp);
+                    if(change.doc.data().timestamp > len )
+                    {
+                      // console.log("NEW");
+                      location.reload(true);
+                    }
+                  }
+                });
+              });
+
               var seenBy=querySnapshot2.docs[0].data().seenBy;
               if(seenBy.includes("Admin") || seenBy.includes("admin"))
               {
@@ -829,11 +847,11 @@ body {
               }
             }
         });
-
         messagecount.forEach(function(item)
         {
           $('#chatid').append(item);
         });
+
       });
     })
     .catch(function(error) 
@@ -841,7 +859,7 @@ body {
         console.log("Error getting documents: ", error);
     });
   });
-  
+
   function clickUser(firebaseId)
   {
       $('#screencontent').load(location.href + " #activeClass");
@@ -933,6 +951,7 @@ body {
       console.log(errorMessage);
     });
   });
+  
   function msgSent(firebaseId)
   {
       var db = firebase.firestore();

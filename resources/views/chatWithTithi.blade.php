@@ -54,12 +54,12 @@
         var userMessageCollection= usersref.doc(firebaseId).collection("message");
         
         var docData = {
-            idFrom: 'Vaibhavi',
+            idFrom: 'Tithi',
             idTo: '',
             timestamp:datetime.toString(),
             Content: chatData,
             type: 1,
-            seenBy: ['Vaibhavi'],
+            seenBy: ['Tithi'],
            
         };
 
